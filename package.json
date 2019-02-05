@@ -1,0 +1,55 @@
+{
+  "name": "express-variable",
+  "version": "1.0.0",
+  "description": "Automatically transform CSS and JS within Express",
+  "author": "Jonathan Neal <jonathantneal@hotmail.com>",
+  "license": "CC0-1.0",
+  "repository": "jonathantneal/express-variable",
+  "homepage": "https://github.com/jonathantneal/express-variable#readme",
+  "bugs": "https://github.com/jonathantneal/express-variable/issues",
+  "main": "index.js",
+  "module": "index.mjs",
+  "files": [
+    "index.js",
+    "index.js.map",
+    "index.mjs",
+    "index.mjs.map"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm test",
+    "pretest": "rollup --config --silent",
+    "test": "npm run test:js",
+    "test:js": "eslint src/*.js --cache --ignore-path .gitignore --quiet"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "dependencies": {
+    "@babel/core": "^7.2.2",
+    "fse": "^4.0.1",
+    "postcss": "^7.0.14"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.3.1",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.13.0",
+    "eslint-config-dev": "^2.0.0",
+    "pre-commit": "^1.2.2",
+    "rollup": "^1.1.2",
+    "rollup-plugin-babel": "^4.3.2"
+  },
+  "eslintConfig": {
+    "extends": "dev",
+    "parser": "babel-eslint"
+  },
+  "keywords": [
+    "babel",
+    "css",
+    "express",
+    "js",
+    "middleware",
+    "postcss",
+    "transform",
+    "variable"
+  ]
+}
