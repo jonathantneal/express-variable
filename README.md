@@ -34,6 +34,10 @@ app.use(expressVariable('public', {
       inline: true
     }
     /* more postcss process options go here */
+  },
+  html: {
+    plugins: [ /* phtml plugins go here */ ]
+    /* more phtml process options go here */
   }
 }));
 ```
@@ -50,16 +54,21 @@ npm install express-variable --save-dev
 
 ## Options
 
-The first argument determines the directory being watched. The second option configures the transformers; [Babel] and [PostCSS].
+The first argument determines the directory being watched. The second option configures the transformers; [pHTML], [PostCSS], and [Babel].
 
-### js
+### html
 
-The `js` option configures [Babel] and its transform options.
+The `html` option configures [pHTML] and its process options.
 
-#### js.fileExtensions
+#### html.fileExtensions
 
-The `js.fileExtensions` option configures which file extensions should be
-intercepted by [Babel].
+The `html.fileExtensions` option configures which file extensions should be
+intercepted by [pHTML].
+
+#### html.index
+
+The `html.index` option defines a specified directory index HTML file. Setting
+this to false to disables directory indexing.
 
 ### css
 
@@ -69,6 +78,15 @@ The `css` option configures [Babel] and its process options.
 
 The `js.fileExtensions` option configures which file extensions should be
 intercepted by [PostCSS].
+
+### js
+
+The `js` option configures [Babel] and its transform options.
+
+#### js.fileExtensions
+
+The `js.fileExtensions` option configures which file extensions should be
+intercepted by [Babel].
 
 [cli-img]: https://img.shields.io/travis/jonathantneal/express-variable.svg
 [cli-url]: https://travis-ci.org/jonathantneal/express-variable
@@ -80,4 +98,5 @@ intercepted by [PostCSS].
 [Babel]: https://github.com/babel/babel/
 [Express]: http://expressjs.com/
 [Express Variable]: https://github.com/jonathantneal/express-variable
+[pHTML]: https://github.com/phtmlorg/phtml
 [PostCSS]: https://github.com/postcss/postcss
