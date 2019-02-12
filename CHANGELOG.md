@@ -1,5 +1,9 @@
 # Changes to Express Variable
 
+### 1.1.3 (February 12, 2019)
+
+- Updated: `phtml` to 1.1.6 (patch)
+
 ### 1.1.2 (February 12, 2019)
 
 - Updated: `phtml` to 1.1.5 (patch)
