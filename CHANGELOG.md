@@ -1,5 +1,10 @@
 # Changes to Express Variable
 
+### 2.0.0 (February 18, 2019)
+
+- Updated: `@babel/core` to 7.3.3 (minor)
+- Updated: `phtml` to 2.0.0 (major)
+
 ### 1.1.3 (February 12, 2019)
 
 - Updated: `phtml` to 1.1.6 (patch)
