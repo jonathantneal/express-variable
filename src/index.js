@@ -1,10 +1,14 @@
 import babel from '@babel/core';
+import cosmiconfig from 'cosmiconfig';
 import fs from 'fse';
 import path from 'path';
 import pHTML from 'phtml';
 import postcss from 'postcss';
 
 export default function expressVariable(dir, rawopts) {
+	const postcssConfig = cosmiconfig('postcss').search();
+	const phtmlConfig = cosmiconfig('phtml').search();
+
 	return async (request, response, next) => {
 		// transform GET requests, ignore the rest
 		const isValidRequestMethod = /^GET$/i.test(request.method);
@@ -23,12 +27,17 @@ export default function expressVariable(dir, rawopts) {
 			: false
 		: 'index.html';
 
+		const cssConfigOpts = Object(Object(await postcssConfig).config);
+		const htmlConfigOpts = Object(Object(await phtmlConfig).config);
+
 		const opts = {
 			css: {
+				...cssConfigOpts,
 				...cssOpts,
-				fileExtensions: [].concat(cssOpts.fileExtensions || ['css', 'pcss'])
+				fileExtensions: [].concat(cssOpts.fileExtensions || ['css', 'pcss']),
 			},
 			html: {
+				...htmlConfigOpts,
 				...htmlOpts,
 				fileExtensions: [].concat(htmlOpts.fileExtensions || ['html', 'phtml'])
 			},

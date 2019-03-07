@@ -1,5 +1,11 @@
 # Changes to Express Variable
 
+### 2.1.0 (March 7, 2019)
+
+- Added: Support for PostCSS and pHTML configuration files
+- Updated: `@babel/core` to 7.3.4 (patch)
+- Updated: `phtml` to 2.0.2 (patch)
+
 ### 2.0.0 (February 18, 2019)
 
 - Updated: `@babel/core` to 7.3.3 (minor)
