@@ -1,5 +1,11 @@
 # Changes to Express Variable
 
+### 2.2.0 (March 9, 2019)
+
+- Added: Support for universal configuration or universal configuration files
+- Added: Support for sugary Babel, PostCSS, and pHTML configuration files
+- Updated `phtml` to 2.0.3 (patch)
+
 ### 2.1.0 (March 7, 2019)
 
 - Added: Support for PostCSS and pHTML configuration files

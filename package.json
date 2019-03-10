@@ -1,6 +1,6 @@
 {
   "name": "express-variable",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Automatically transform CSS and JS within Express",
   "author": "Jonathan Neal <jonathantneal@hotmail.com>",
   "license": "CC0-1.0",
@@ -28,16 +28,17 @@
     "@babel/core": "^7.3.4",
     "cosmiconfig": "^5.1.0",
     "fse": "^4.0.1",
-    "phtml": "^2.0.2",
+    "phtml": "^2.0.3",
     "postcss": "^7.0.14"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.3.4",
     "babel-eslint": "^10.0.1",
+    "babel-plugin-transform-async-to-promises": "^0.8.5",
     "eslint": "^5.15.1",
     "eslint-config-dev": "^2.0.0",
     "pre-commit": "^1.2.2",
-    "rollup": "^1.5.0",
+    "rollup": "^1.6.0",
     "rollup-plugin-babel": "^4.3.2"
   },
   "eslintConfig": {

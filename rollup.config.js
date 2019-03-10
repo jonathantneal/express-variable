@@ -8,6 +8,11 @@ export default {
 	],
 	plugins: [
 		babel({
+			plugins: [
+				['transform-async-to-promises', {
+					inlineHelpers: true
+				}]
+			],
 			presets: [
 				['@babel/env', {
 					loose: true,

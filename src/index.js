@@ -6,8 +6,68 @@ import pHTML from 'phtml';
 import postcss from 'postcss';
 
 export default function expressVariable(dir, rawopts) {
-	const postcssConfig = cosmiconfig('postcss').search();
-	const phtmlConfig = cosmiconfig('phtml').search();
+	const optsPromise = Promise.all([
+		typeof Object(rawopts).config === 'string' ? cosmiconfig(rawopts.config).search() : Promise.resolve(Object(rawopts).config),
+		cosmiconfig('babel').search(),
+		cosmiconfig('postcss').search(),
+		cosmiconfig('phtml').search()
+	]).then(results => results.map(result => Object(Object(result).config))).then(([universalConfig, babelConfig, postcssConfig, phtmlConfig]) => {
+		// configure the JS and CSS options
+		const cssOpts = Object(rawopts).css;
+		const htmlOpts = Object(rawopts).html;
+		const jsOpts = Object(rawopts).js;
+
+		// normalize the index option
+		const index = 'index' in Object(rawopts)
+			? rawopts.index
+				? String(rawopts.index)
+			: false
+		: 'index.html';
+
+		// normalize the css option
+		const css = {
+			...Object(universalConfig.css),
+			...Object(postcssConfig),
+			...Object(cssOpts),
+			fileExtensions: [].concat(Object(cssOpts).fileExtensions || ['css', 'pcss']),
+		};
+
+		css.plugins = [].concat(css.plugins || []);
+
+		// normalize the html option
+		const html = {
+			...Object(universalConfig.html),
+			...Object(phtmlConfig),
+			...Object(htmlOpts),
+			fileExtensions: [].concat(Object(htmlOpts).fileExtensions || ['html', 'phtml'])
+		};
+
+		html.plugins = [].concat(html.plugins || []);
+
+		// normalize the js option
+		const js = {
+			...Object(universalConfig.js),
+			...Object(babelConfig),
+			...Object(jsOpts),
+			fileExtensions: [].concat(Object(jsOpts).fileExtensions || ['js', 'mjs'])
+		};
+
+		js.plugins = [].concat(js.plugins || []);
+
+		const opts = { index, css, html, js };
+
+		opts.onReady = Object(rawopts).onReady;
+		opts.onHTML = Object(rawopts).onHTML;
+		opts.onCSS = Object(rawopts).onCSS;
+		opts.onJS = Object(rawopts).onJS;
+
+		// fire the onReady function
+		if (typeof opts.onReady === 'function') {
+			rawopts.onReady(opts);
+		}
+
+		return opts;
+	});
 
 	return async (request, response, next) => {
 		// transform GET requests, ignore the rest
@@ -17,50 +77,23 @@ export default function expressVariable(dir, rawopts) {
 			return next();
 		}
 
-		// configure the JS and CSS options
-		const cssOpts = Object(Object(rawopts).css);
-		const htmlOpts = Object(Object(rawopts).html);
-		const jsOpts = Object(Object(rawopts).js);
-		const index = 'index' in Object(rawopts)
-			? rawopts.index
-				? String(rawopts.index)
-			: false
-		: 'index.html';
-
-		const cssConfigOpts = Object(Object(await postcssConfig).config);
-		const htmlConfigOpts = Object(Object(await phtmlConfig).config);
-
-		const opts = {
-			css: {
-				...cssConfigOpts,
-				...cssOpts,
-				fileExtensions: [].concat(cssOpts.fileExtensions || ['css', 'pcss']),
-			},
-			html: {
-				...htmlConfigOpts,
-				...htmlOpts,
-				fileExtensions: [].concat(htmlOpts.fileExtensions || ['html', 'phtml'])
-			},
-			js: {
-				...jsOpts,
-				fileExtensions: [].concat(jsOpts.fileExtensions || ['js', 'mjs'])
-			}
-		};
-
 		// determine path information about the request
 		let fullpath = path.resolve(`${dir || ''}${request.path}`);
 		const extension = path.extname(fullpath).slice(1);
 
-		// determine whether a JS or CSS request is being made, ignore the rest
+		const opts = await optsPromise;
+
+		// determine whether an HTML, CSS, or JS request is being made, ignore the rest
 		const isCssExtension = opts.css.fileExtensions.includes(extension);
 		const isJsExtension = opts.js.fileExtensions.includes(extension);
 		let isHtmlExtension = opts.html.fileExtensions.includes(extension);
 
-		if (!isJsExtension && !isCssExtension && !isHtmlExtension) {
+		// further determine whether an index HTML request is being made
+		if (!isJsExtension && !isCssExtension && !isHtmlExtension && opts.index) {
 			try {
-				const indexpath = path.resolve(fullpath, index);
+				const indexpath = path.resolve(fullpath, opts.index);
 
-				await fs.stat(indexpath);
+				fs.statSync(indexpath);
 
 				fullpath = indexpath;
 				isHtmlExtension = true;
@@ -71,7 +104,7 @@ export default function expressVariable(dir, rawopts) {
 
 		try {
 			// determine if the file exists and has been modified since the last request
-			const stat = await fs.stat(fullpath);
+			const stat = fs.statSync(fullpath);
 			const lastModifiedUTCString = new Date(stat.mtimeMs).toUTCString();
 			const isTheFileUnmodified = request.headers['if-modified-since'] === lastModifiedUTCString;
 
@@ -82,49 +115,65 @@ export default function expressVariable(dir, rawopts) {
 				response.writeHead(304);
 
 				return response.end();
-			} else {
-				// read the source as UTF-8 content
-				const source = await fs.readFile(fullpath, 'utf8');
-
-				if (isCssExtension) {
-					// configure postcss process options
-					const processOpts = { ...opts.css, from: fullpath };
-
-					delete processOpts.fileExtensions;
-					delete processOpts.plugins;
-
-					const plugins = Array.from(opts.css.plugins || []);
-
-					// process the source using postcss
-					const result = await postcss(plugins).process(source, processOpts);
-
-					buffer = result.css;
-				} else if (isHtmlExtension) {
-					// configure phtml process options
-					const processOpts = { ...opts.html, from: fullpath };
-
-					delete processOpts.fileExtensions;
-					delete processOpts.index;
-					delete processOpts.plugins;
-
-					const plugins = Array.from(opts.html.plugins || []);
-
-					// process the source using phtml
-					const result = await pHTML.use(plugins).process(source, processOpts);
-
-					buffer = result.html;
-				} else if (isJsExtension) {
-					// configure babel transform options
-					const transformOpts = { ...opts.js, filename: fullpath };
-
-					delete transformOpts.fileExtensions;
-
-					// process the source using babel
-					const result = await babel.transformAsync(source, transformOpts);
-
-					buffer = result.code;
-				}
 			}
+
+			// read the source as UTF-8 content
+			opts.fullpath = fullpath;
+			opts.source = fs.readFileSync(fullpath, 'utf8');
+
+			opts.defaultOnCSS = () => {
+				// configure postcss process options
+				const processOpts = { ...opts.css, from: fullpath };
+
+				delete processOpts.fileExtensions;
+				delete processOpts.plugins;
+
+				// process the source using postcss
+				return postcss(opts.css.plugins).process(opts.source, processOpts).then(
+					result => result.css
+				);
+			};
+
+			opts.defaultOnHTML = () => {
+				// configure phtml process options
+				const processOpts = { ...opts.html, from: fullpath };
+
+				delete processOpts.fileExtensions;
+				delete processOpts.plugins;
+
+				// process the source using phtml
+				return pHTML.use(opts.html.plugins).process(opts.source, processOpts).then(
+					result => result.html
+				);
+			};
+
+			opts.defaultOnJS = () => {
+				// configure babel transform options
+				const transformOpts = { ...opts.js, babelrc: false, filename: fullpath };
+
+				delete transformOpts.fileExtensions;
+
+				// process the source using babel
+				return babel.transformAsync(opts.source, transformOpts).then(
+					result => result.code
+				);
+			};
+
+			buffer = await (
+				isCssExtension
+					? typeof opts.onCSS === 'function'
+						? opts.onCSS(opts)
+					: opts.defaultOnCSS()
+				: isHtmlExtension
+					? typeof opts.onHTML === 'function'
+						? opts.onHTML(opts)
+					: opts.defaultOnHTML()
+				: isJsExtension
+					? typeof opts.onJS === 'function'
+						? opts.onJS(opts)
+					: opts.defaultOnJS()
+				: Promise.resolve('')
+			);
 
 			// determine the content type being served
 			const contentType = `${isHtmlExtension ? 'text/html' : isJsExtension ? 'application/javascript' : 'text/css'}; charset=UTF-8`;
