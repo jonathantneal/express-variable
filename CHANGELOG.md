@@ -1,5 +1,9 @@
 # Changes to Express Variable
 
+### 2.2.1 (March 9, 2019)
+
+- Fixed: Issues with relative source maps
+
 ### 2.2.0 (March 9, 2019)
 
 - Added: Support for universal configuration or universal configuration files

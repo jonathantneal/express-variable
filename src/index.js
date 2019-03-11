@@ -5,7 +5,7 @@ import path from 'path';
 import pHTML from 'phtml';
 import postcss from 'postcss';
 
-export default function expressVariable(dir, rawopts) {
+export default function expressVariable(rawdir, rawopts) {
 	const optsPromise = Promise.all([
 		typeof Object(rawopts).config === 'string' ? cosmiconfig(rawopts.config).search() : Promise.resolve(Object(rawopts).config),
 		cosmiconfig('babel').search(),
@@ -78,7 +78,8 @@ export default function expressVariable(dir, rawopts) {
 		}
 
 		// determine path information about the request
-		let fullpath = path.resolve(`${dir || ''}${request.path}`);
+		const dir = path.resolve(rawdir || '');
+		let fullpath = path.resolve(dir, request.path);
 		const extension = path.extname(fullpath).slice(1);
 
 		const opts = await optsPromise;
@@ -118,12 +119,13 @@ export default function expressVariable(dir, rawopts) {
 			}
 
 			// read the source as UTF-8 content
+			opts.dir = dir;
 			opts.fullpath = fullpath;
 			opts.source = fs.readFileSync(fullpath, 'utf8');
 
 			opts.defaultOnCSS = () => {
 				// configure postcss process options
-				const processOpts = { ...opts.css, from: fullpath };
+				const processOpts = { ...opts.css, from: fullpath, to: fullpath };
 
 				delete processOpts.fileExtensions;
 				delete processOpts.plugins;
@@ -136,7 +138,7 @@ export default function expressVariable(dir, rawopts) {
 
 			opts.defaultOnHTML = () => {
 				// configure phtml process options
-				const processOpts = { ...opts.html, from: fullpath };
+				const processOpts = { ...opts.html, dirname: dir, from: fullpath };
 
 				delete processOpts.fileExtensions;
 				delete processOpts.plugins;
@@ -149,7 +151,7 @@ export default function expressVariable(dir, rawopts) {
 
 			opts.defaultOnJS = () => {
 				// configure babel transform options
-				const transformOpts = { ...opts.js, babelrc: false, filename: fullpath };
+				const transformOpts = { ...opts.js, babelrc: false, filename: fullpath, filenameRelative: path.relative(dir, fullpath) };
 
 				delete transformOpts.fileExtensions;
 
