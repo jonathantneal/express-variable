@@ -1,6 +1,6 @@
 {
   "name": "express-variable",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Automatically transform CSS and JS within Express",
   "author": "Jonathan Neal <jonathantneal@hotmail.com>",
   "license": "CC0-1.0",

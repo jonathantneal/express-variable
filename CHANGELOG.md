@@ -1,6 +1,10 @@
 # Changes to Express Variable
 
-### 2.2.1 (March 9, 2019)
+### 2.2.2 (March 11, 2019)
+
+- Fixed: Another issue with relative source maps
+
+### 2.2.1 (March 11, 2019)
 
 - Fixed: Issues with relative source maps
 

@@ -79,7 +79,7 @@ export default function expressVariable(rawdir, rawopts) {
 
 		// determine path information about the request
 		const dir = path.resolve(rawdir || '');
-		let fullpath = path.resolve(dir, request.path);
+		let fullpath = path.join(dir, request.path);
 		const extension = path.extname(fullpath).slice(1);
 
 		const opts = await optsPromise;
@@ -138,7 +138,7 @@ export default function expressVariable(rawdir, rawopts) {
 
 			opts.defaultOnHTML = () => {
 				// configure phtml process options
-				const processOpts = { ...opts.html, dirname: dir, from: fullpath };
+				const processOpts = { ...opts.html, from: fullpath };
 
 				delete processOpts.fileExtensions;
 				delete processOpts.plugins;
